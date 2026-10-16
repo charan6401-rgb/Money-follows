@@ -1,0 +1,26 @@
+[project]
+name = "money-follows-api"
+version = "0.1.0"
+description = "Money Follows API (FastAPI, SQLAlchemy Core, PostgreSQL with forced RLS)"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S", "SIM"]
+ignore = [
+  "S608",  # SQL built from constant fragments only; enforced by tests/test_static.py
+  "B008",  # FastAPI Depends/Query defaults
+  "E501",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106", "S608"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
