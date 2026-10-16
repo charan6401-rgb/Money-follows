@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-cement-100 font-sans text-ink antialiased;
+    min-height: 100dvh;
+    overflow-wrap: anywhere;
+  }
+
+  /* Telugu needs more vertical room than Latin text. */
+  :lang(te) body {
+    line-height: 1.75;
+  }
+
+  :focus-visible {
+    outline: 3px solid theme('colors.focus');
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* 16px inputs stop iOS Safari zooming on focus. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  dialog {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    max-width: none;
+    max-height: none;
+  }
+
+  dialog::backdrop {
+    background: rgba(22, 35, 58, 0.5);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Amounts: serif, lining and tabular numerals so rupee columns align. */
+  .num {
+    font-family: theme('fontFamily.serif');
+    font-variant-numeric: lining-nums tabular-nums;
+    font-feature-settings:
+      'lnum' 1,
+      'tnum' 1;
+    letter-spacing: -0.005em;
+  }
+
+  /* The paise part of an amount is quieter than the rupees. */
+  .num-paise {
+    @apply text-[0.72em] font-normal opacity-70;
+  }
+
+  .sheet-enter {
+    animation: sheet-up 180ms ease-out;
+  }
+
+  @keyframes sheet-up {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-control bg-cement-200;
+  }
+}
