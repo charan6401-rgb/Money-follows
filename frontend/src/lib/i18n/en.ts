@@ -38,6 +38,10 @@ export const en = {
   'config.title': 'Setup is incomplete',
   'config.body': 'This copy of the app is missing required settings. Tell whoever deployed it.',
 
+  'notFound.title': 'This page is not available',
+  'notFound.body': 'The link may be wrong, or this part of the app is not built yet.',
+  'notFound.home': 'Go to Home',
+
   // ---------------------------------------------------------------- sign in
   'auth.title': 'Sign in',
   'auth.subtitle': 'Enter your email address. We will send you a code to sign in.',

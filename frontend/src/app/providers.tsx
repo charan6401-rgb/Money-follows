@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ApiError } from '@/lib/api';
 import { ApiProvider } from '@/lib/ApiProvider';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
 import { AuthProvider } from '@/features/auth/AuthProvider';
@@ -18,11 +17,6 @@ function makeQueryClient(): QueryClient {
       mutations: { retry: false },
     },
   });
-}
-
-/** True when an error will not get better by asking again. */
-export function isFinalError(error: unknown): boolean {
-  return error instanceof ApiError && error.status >= 400 && error.status < 500;
 }
 
 export function AppProviders({ apiBaseUrl, children }: { apiBaseUrl: string; children: ReactNode }) {

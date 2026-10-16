@@ -1,21 +1,8 @@
-import type { Invoice, InvoiceStatus, PaymentState } from '@/types/api';
+import type { Invoice } from '@/types/api';
+import { invoiceTone, type InvoiceTone } from '@/lib/invoice-tone';
 import type { MessageKey } from '@/lib/i18n/en';
 import { useI18n } from '@/lib/i18n/useI18n';
 import { cn } from '@/lib/cn';
-
-export type InvoiceTone = 'overdue' | 'partial' | 'unpaid' | 'settled' | 'cancelled';
-
-/** One display state per invoice, in priority order: cancelled, settled, overdue, partial, unpaid. */
-export function invoiceTone(invoice: {
-  status: InvoiceStatus;
-  payment_state: PaymentState;
-  is_overdue: boolean;
-}): InvoiceTone {
-  if (invoice.status === 'cancelled') return 'cancelled';
-  if (invoice.payment_state === 'settled') return 'settled';
-  if (invoice.is_overdue) return 'overdue';
-  return invoice.payment_state;
-}
 
 const labelKey: Record<InvoiceTone, MessageKey> = {
   overdue: 'status.overdue',
@@ -31,15 +18,6 @@ const styles: Record<InvoiceTone, string> = {
   unpaid: 'bg-cement-200 text-ink-700',
   settled: 'bg-ledger-soft text-ledger',
   cancelled: 'bg-cement-200 text-ink-500 line-through decoration-1',
-};
-
-/** The colour of the card's left "margin rule", like the red line down a ledger page. */
-export const ruleColour: Record<InvoiceTone, string> = {
-  overdue: 'bg-stamp',
-  partial: 'bg-ochre',
-  unpaid: 'bg-cement-300',
-  settled: 'bg-ledger',
-  cancelled: 'bg-cement-300',
 };
 
 function Icon({ tone }: { tone: InvoiceTone }) {
