@@ -1,7 +1,7 @@
 """Authentication, tenant isolation, role matrix and error-shape tests through the real HTTP stack."""
 
+import ast
 import logging
-import re
 import time
 import uuid
 from pathlib import Path
@@ -321,24 +321,40 @@ def test_only_rls_module_calls_set_config():
     assert offenders == []
 
 
-# Reviewed f-string SQL: each interpolates only a module constant or a fixed column allow-list;
-# every request-derived value is a bound parameter. Any NEW f-string SQL fails this test until reviewed.
+# Reviewed f-string SQL, counted per file. Every one interpolates only module-level constants
+# (the balance fragments in invoices/balance.py) or a fixed column allow-list; every request-derived
+# value is a bound parameter. A NEW f-string SQL in any file changes a count and fails this test
+# until it has been reviewed and the count here is updated deliberately.
 REVIEWED_FSTRING_SQL = {
-    'text(f"{INVOICE_SELECT} WHERE i.business_id = :b AND i.id = :id")',
-    "text(f\"UPDATE mf.customers SET {', '.join(sets)} WHERE business_id = :b AND id = :id\")",
+    "modules/customers/router.py": 3,
+    "modules/identity/router.py": 1,
+    "modules/invoices/router.py": 1,
+    "modules/payments/router.py": 1,
+    "modules/reports/router.py": 7,
 }
 
 
+def _interpolated_sql_strings(path: Path) -> int:
+    """Count f-strings with interpolation anywhere inside a text(...) call (AST, not regex)."""
+    tree = ast.parse(path.read_text())
+    total = 0
+    for call in ast.walk(tree):
+        if isinstance(call, ast.Call) and isinstance(call.func, ast.Name) and call.func.id == "text":
+            total += sum(
+                1
+                for node in ast.walk(call)
+                if isinstance(node, ast.JoinedStr) and any(isinstance(v, ast.FormattedValue) for v in node.values)
+            )
+    return total
+
+
 def test_no_unreviewed_fstring_sql():
-    pat = re.compile(r"text\(\s*f[\"'].*")
-    found = set()
+    found = {}
     for p in APP.rglob("*.py"):
-        for ln in p.read_text().splitlines():
-            m = pat.search(ln)
-            if m:
-                found.add(m.group(0).rstrip(",").rstrip())
-    unreviewed = [f for f in found if not any(f.startswith(r) for r in REVIEWED_FSTRING_SQL)]
-    assert unreviewed == [], "new f-string SQL needs review"
+        n = _interpolated_sql_strings(p)
+        if n:
+            found[str(p.relative_to(APP))] = n
+    assert found == REVIEWED_FSTRING_SQL
 
 
 def test_settings_have_no_service_role_or_jwt_secret_field():

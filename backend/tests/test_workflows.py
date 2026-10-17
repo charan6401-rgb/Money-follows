@@ -351,17 +351,6 @@ def test_payment_history_lists_active_and_reversed(client, tenant, superuser_eng
     assert reversed_[0]["reversal_reason"] == "bounced"
 
 
-def test_payment_writes_are_not_implemented(client, tenant):
-    user, biz = tenant
-    iid = inv(client, user, biz, cust(client, user, biz)).json()["id"]
-    r = client.post(
-        f"{API}/invoices/{iid}/payments",
-        json={"amount": "10", "paid_on": "2026-04-12", "method": "cash"},
-        headers=user.headers(biz),
-    )
-    assert r.status_code in (404, 405)  # S4 is not built; this test documents that fact
-
-
 # ---------------------------------------------------------------- audit
 def test_mutations_write_audit_rows(client, tenant, superuser_engine):
     user, biz = tenant
