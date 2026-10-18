@@ -43,9 +43,9 @@ export function CustomersPage() {
   const { t } = useI18n();
   const businessId = useBusinessId();
   const [search, setSearch] = useState('');
-  const [includeInactive, setIncludeInactive] = useState(false);
+  const [inactiveOnly, setInactiveOnly] = useState(false);
   const debounced = useDebouncedValue(search);
-  const query = useCustomers(businessId, debounced, includeInactive);
+  const query = useCustomers(businessId, debounced, inactiveOnly);
   const items = query.data?.pages.flatMap((p) => p.items) ?? [];
   const searching = effectiveSearch(debounced) !== '';
 
@@ -71,8 +71,8 @@ export function CustomersPage() {
           <input
             type="checkbox"
             className="h-5 w-5"
-            checked={includeInactive}
-            onChange={(event) => setIncludeInactive(event.target.checked)}
+            checked={inactiveOnly}
+            onChange={(event) => setInactiveOnly(event.target.checked)}
           />
           {t('customers.showInactive')}
         </label>

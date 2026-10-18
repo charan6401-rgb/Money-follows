@@ -68,3 +68,11 @@ export function formatDateTime(instant: string | null | undefined): string {
   const p = partsInIst(date);
   return `${p.day}-${p.month}-${p.year} ${p.hour}:${p.minute}`;
 }
+
+/** "2026-10-01" plus 30 days is "2026-10-31". Calendar arithmetic only, no time zone involved. */
+export function addDays(value: string, days: number): string {
+  const match = ISO_DATE.exec(value);
+  if (!match) return value;
+  const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]) + days));
+  return date.toISOString().slice(0, 10);
+}

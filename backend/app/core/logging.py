@@ -12,7 +12,8 @@ _REDACTIONS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"(?i)bearer\s+[A-Za-z0-9._~+/=-]+"), "Bearer [redacted]"),
     (re.compile(r"\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]*"), "[jwt]"),
     (re.compile(r"postgres(?:ql)?(?:\+\w+)?://\S+", re.I), "[db-url]"),
-    (re.compile(r"\+?91[\s-]?[6-9][0-9]{4}[\s-]?[0-9]{5}"), "[phone]"),
+    # Indian mobile numbers with or without +91 / 91 / 0, with optional spaces or dashes.
+    (re.compile(r"(?<![0-9])(?:\+?91[\s-]?|0)?[6-9][0-9]{4}[\s-]?[0-9]{5}(?![0-9])"), "[phone]"),
     (re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+"), "[email]"),
 ]
 
@@ -35,12 +36,17 @@ def redact(text: str) -> str:
     return text
 
 
+# Attributes every LogRecord has. Only attributes outside this set (those added through `extra=`)
+# can be stripped; removing a standard one such as `name` would break formatting.
+_STANDARD_ATTRS = frozenset(logging.LogRecord("", 0, "", 0, "", (), None).__dict__) | {"message", "asctime"}
+
+
 class RedactionFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         record.msg = redact(record.getMessage())
         record.args = None
         for key in list(record.__dict__):
-            if key.lower() in _FORBIDDEN_EXTRA:
+            if key not in _STANDARD_ATTRS and key.lower() in _FORBIDDEN_EXTRA:
                 del record.__dict__[key]
         if record.exc_info:
             # Keep the exception type only; messages can carry SQL parameters or PII.

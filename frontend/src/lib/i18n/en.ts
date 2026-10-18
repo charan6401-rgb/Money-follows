@@ -118,7 +118,7 @@ export const en = {
   'customers.searchLabel': 'Search customers',
   'customers.searchPlaceholder': 'Name or phone',
   'customers.minSearch': 'Type at least 2 characters to search.',
-  'customers.showInactive': 'Show inactive customers',
+  'customers.showInactive': 'Show only inactive customers',
   'customers.emptyTitle': 'No customers yet',
   'customers.emptyBody': 'Add the businesses you sell to on credit.',
   'customers.emptySearch': 'No customers match your search.',

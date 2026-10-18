@@ -16,16 +16,17 @@ export function effectiveSearch(text: string): string {
   return trimmed.length >= 2 ? trimmed : '';
 }
 
-export function useCustomers(businessId: string, search: string, includeInactive: boolean) {
+/** `inactiveOnly` lists deactivated customers; otherwise only active ones (API.md 4.2 `is_active`). */
+export function useCustomers(businessId: string, search: string, inactiveOnly: boolean) {
   const api = useApi();
   const q = effectiveSearch(search);
   return useInfiniteQuery({
-    queryKey: keys.customers(businessId, q, includeInactive),
+    queryKey: keys.customers(businessId, q, inactiveOnly),
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam, signal }) =>
       api.get<Page<CustomerListItem>>(
         '/customers',
-        { q, is_active: includeInactive ? undefined : true, limit: 25, cursor: pageParam },
+        { q, is_active: !inactiveOnly, limit: 25, cursor: pageParam },
         { signal },
       ),
     getNextPageParam: (last) => last.next_cursor ?? undefined,

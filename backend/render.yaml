@@ -1,0 +1,44 @@
+# Render Blueprint for the Money Follows API. Names and placeholders only: every secret is
+# entered in the Render dashboard (sync: false), never committed. See docs/DEPLOYMENT.md.
+#
+# NOT YET DEPLOYED OR VERIFIED. Check the Python version, plan and region against Render's
+# current documentation before relying on it (DECISIONS D-9).
+services:
+  - type: web
+    name: money-follows-api
+    runtime: python
+    rootDir: backend
+    # The free plan sleeps after inactivity (a slow first request). DECISIONS D-9 gate 6 requires
+    # always-on hosting before real customer data is stored. Change `plan` when you do.
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # Migrations are NOT run here: the migrator role must never be configured on the API host.
+    startCommand: uvicorn app.main:create_app --factory --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health/live
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.16
+      - key: ENVIRONMENT
+        value: production
+      # Runtime role mf_app through the Supabase POOLER (not the migrator, not the superuser).
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_JWKS_URL
+        sync: false
+      - key: SUPABASE_JWT_ISSUER
+        sync: false
+      - key: SUPABASE_JWT_AUDIENCE
+        value: authenticated
+      # Exact Vercel origin(s), comma separated, https only, no wildcard.
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: DB_POOL_SIZE
+        value: "5"
+      - key: DB_MAX_OVERFLOW
+        value: "5"
+      - key: DB_STATEMENT_TIMEOUT_MS
+        value: "15000"
+      - key: DB_LOCK_TIMEOUT_MS
+        value: "5000"
+      - key: LOG_LEVEL
+        value: INFO

@@ -378,3 +378,18 @@ def test_log_redaction_masks_secrets():
     out = rec.getMessage()
     for leaked in ("eyJhbGci", "hunter2", "9876543210", "a@b.com"):
         assert leaked not in out
+
+
+def test_logging_pipeline_formats_and_strips_forbidden_extras(capsys):
+    """Through the real handler: the logger name survives, forbidden extras and secrets do not."""
+    from app.core.logging import setup_logging
+
+    setup_logging("INFO")
+    logging.getLogger("mf.test").info(
+        "customer 9876543210 token Bearer abc.def.ghi",
+        extra={"request_id": "req-1", "phone": "+919876543210", "authorization": "Bearer zzz.yyy.xxx"},
+    )
+    out = capsys.readouterr().out
+    assert "logger=mf.test" in out and "request_id=req-1" in out
+    for leaked in ("9876543210", "zzz.yyy.xxx", "abc.def.ghi"):
+        assert leaked not in out

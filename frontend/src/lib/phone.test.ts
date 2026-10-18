@@ -13,7 +13,7 @@ describe('normalizePhone', () => {
     expect(normalizePhone(input)).toBe(expected);
   });
 
-  it.each(['', '12345', '98765432101', 'abcdefghij', '+1 9876543210', '98765 4321'])(
+  it.each(['', '12345', '98765432101', 'abcdefghij', '+1 9876543210', '98765 4321', '5876543210', '0123456789', '+91 1234567890'])(
     'rejects %s',
     (input) => {
       expect(normalizePhone(input)).toBeNull();

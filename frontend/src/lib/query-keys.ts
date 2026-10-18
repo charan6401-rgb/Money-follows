@@ -5,8 +5,8 @@
 export const keys = {
   dashboard: (b: string) => [b, 'dashboard'] as const,
   aging: (b: string) => [b, 'aging'] as const,
-  customers: (b: string, q: string, includeInactive: boolean) =>
-    [b, 'customers', { q, includeInactive }] as const,
+  customers: (b: string, q: string, inactiveOnly: boolean) =>
+    [b, 'customers', { q, inactiveOnly }] as const,
   customersAll: (b: string) => [b, 'customers'] as const,
   customer: (b: string, id: string) => [b, 'customer', id] as const,
   invoices: (b: string, filter: string, customerId: string | undefined) =>

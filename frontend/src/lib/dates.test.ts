@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { daysBetween, formatDate, formatDateTime, isIsoDate, todayIST } from './dates';
+import { addDays, daysBetween, formatDate, formatDateTime, isIsoDate, todayIST } from './dates';
 
 describe('todayIST', () => {
   it('uses the IST calendar day, not the UTC day', () => {
@@ -67,5 +67,15 @@ describe('formatDateTime', () => {
   it('returns empty text for bad input', () => {
     expect(formatDateTime('nope')).toBe('');
     expect(formatDateTime(null)).toBe('');
+  });
+});
+
+describe('addDays', () => {
+  it('adds across month, year and leap-day boundaries', () => {
+    expect(addDays('2026-10-01', 30)).toBe('2026-10-31');
+    expect(addDays('2026-12-31', 1)).toBe('2027-01-01');
+    expect(addDays('2028-02-28', 1)).toBe('2028-02-29');
+    expect(addDays('2026-03-01', -1)).toBe('2026-02-28');
+    expect(addDays('garbage', 5)).toBe('garbage');
   });
 });
