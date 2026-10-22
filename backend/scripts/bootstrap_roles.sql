@@ -29,5 +29,10 @@ END
 $$;
 
 -- Alembic's bookkeeping table lives here so migrations never need rights on schema public.
-CREATE SCHEMA IF NOT EXISTS mf_alembic AUTHORIZATION mf_migrator;
+-- The schema is created WITHOUT `AUTHORIZATION mf_migrator` on purpose: that clause needs the
+-- running user to be able to SET ROLE to mf_migrator, which a role-creator on Supabase cannot
+-- (it only gets ADMIN OPTION on roles it creates -> ERROR 42501 "must be able to SET ROLE").
+-- Granting USAGE and CREATE is enough: Alembic only creates its version table inside the schema.
+CREATE SCHEMA IF NOT EXISTS mf_alembic;
 REVOKE ALL ON SCHEMA mf_alembic FROM PUBLIC;
+GRANT USAGE, CREATE ON SCHEMA mf_alembic TO mf_migrator;

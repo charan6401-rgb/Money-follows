@@ -41,7 +41,7 @@ The **service-role key is never used anywhere** in this project. Do not copy it.
 2. Note `PROJECT_REF`.
 
 ### 1.2 Create the three database roles
-1. Open **SQL Editor**, paste the whole of `backend/scripts/bootstrap_roles.sql`, run it. It is safe to run twice.
+1. Open **SQL Editor** and run `backend/scripts/bootstrap_roles.sql` **one statement block at a time** (the editor runs one paste as a single transaction, so one failure rolls back everything before it). Blocks, in order: (a) the `DO $$ ... CREATE ROLE ... $$;` block; (b) `GRANT mf_definer TO mf_migrator;`; (c) the `GRANT CREATE ON DATABASE` block; (d) the three `mf_alembic` statements. Each is safe to run twice. Before and after, use the verification queries in the section "Verify role state" below.
 2. Set the passwords in a **separate** run (replace the placeholders; do not save this query):
    ```sql
    ALTER ROLE mf_app      PASSWORD 'PUT-A-LONG-RANDOM-PASSWORD-HERE';
@@ -174,3 +174,24 @@ Verified (executed, PostgreSQL 17.10, local): 213 backend tests, 159 frontend te
 **Release gates (D-9), all NOT CONFIGURED.** Do not store real customer financial data until backups (including an independent encrypted copy and a restore drill), custom SMTP, always-on hosting, secrets rotation and the privacy notice are done.
 
 **Not built yet (documented in `API.md`):** adjustments (TDS, discounts, credit notes, write-offs), follow-ups, payment promises, disputes, the WhatsApp reminder message, CSV import, and team invitations. The app shows no screens for these.
+
+
+## Verify role state (read-only; safe to run any time)
+
+```sql
+-- Roles and attributes (expect mf_app/mf_migrator LOGIN, mf_definer NOLOGIN, all NOSUPERUSER, NOBYPASSRLS)
+SELECT rolname, rolcanlogin, rolsuper, rolcreaterole, rolcreatedb, rolbypassrls
+FROM pg_roles WHERE rolname LIKE 'mf\_%' ORDER BY rolname;
+
+-- Role memberships (expect mf_definer -> member mf_migrator with inherit+set true)
+SELECT g.rolname AS granted_role, m.rolname AS member, am.admin_option, am.inherit_option, am.set_option
+FROM pg_auth_members am JOIN pg_roles g ON g.oid = am.roleid JOIN pg_roles m ON m.oid = am.member
+WHERE g.rolname LIKE 'mf\_%' OR m.rolname LIKE 'mf\_%';
+
+-- Database privilege needed to create schema mf (expect true)
+SELECT has_database_privilege('mf_migrator', current_database(), 'CREATE');
+
+-- Schemas, owners and privileges
+SELECT n.nspname, pg_get_userbyid(n.nspowner) AS owner, n.nspacl
+FROM pg_namespace n WHERE n.nspname IN ('mf', 'mf_alembic');
+```
