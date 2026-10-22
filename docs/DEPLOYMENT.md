@@ -142,7 +142,7 @@ SUPABASE_JWT_AUDIENCE= authenticated
 | `VITE_SUPABASE_PUBLIC_KEY` | the publishable (anon) key. **Never the service-role key** |
 
 3. Deploy. If the page is blank or shows a configuration message, a variable is missing; fix it and **redeploy** (they are baked in at build time).
-4. `frontend/vercel.json` already adds the single-page-app rewrite and security headers. Its `connect-src` allows `https://*.onrender.com` and `https://*.supabase.co`. Once you know the exact API host, tighten `https://*.onrender.com` to it and redeploy.
+4. `frontend/vercel.json` already adds the single-page-app rewrite and security headers. Its `connect-src` allows exactly `https://money-follows.onrender.com` (the live API) and `https://*.supabase.co`. If the API host ever changes, edit that one origin in `frontend/vercel.json` and redeploy; do not widen it to a wildcard.
 5. Vercel preview deployments get a different hostname each time and will be blocked by CORS (by design). Test on the production URL or a fixed custom domain.
 
 ---
