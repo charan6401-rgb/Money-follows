@@ -55,7 +55,7 @@ def test_generated_columns_work_on_this_postgres(superuser_engine):
     """D-1 compatibility check: FY boundary and normalization come from the database itself."""
     with superuser_engine.connect() as conn:
         version = conn.execute(text("SHOW server_version")).scalar_one()
-        assert version.startswith("17"), version
+        assert int(version.split(".")[0]) >= 15, version  # generated columns / NULLS NOT DISTINCT era
         fy = conn.execute(
             text(
                 "SELECT d, (EXTRACT(YEAR FROM d)::int - CASE WHEN EXTRACT(MONTH FROM d) < 4 THEN 1 ELSE 0 END) "
